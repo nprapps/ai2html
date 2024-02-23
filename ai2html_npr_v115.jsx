@@ -98,6 +98,7 @@ var defaultSettings = {
   "notes": "",
   "sources": "",
   "credit": "",
+  "double_text": false,
   // removed most NYT-specific settings from default settings, including:
   //   page_template, publish_system, environment, show_in_compatible_apps,
   //   display_for_promotion_only, constrain_width_to_text_column,
@@ -600,7 +601,7 @@ function render(settings, customBlocks) {
     } else {
       progressBar.setTitle(docArtboardName + ': Generating text...');
       textFrames = getTextFramesByArtboard(activeArtboard, masks, settings);
-      textData = convertTextFrames(textFrames, activeArtboard);
+      textData = convertTextFrames(textFrames, activeArtboard,settings);
     }
 
     progressBar.step();
@@ -2435,7 +2436,7 @@ function generateTextFrameHtml(paragraphs, baseStyle, pStyles, cStyles) {
 }
 
 // Convert a collection of TextFrames to HTML and CSS
-function convertTextFrames(textFrames, ab) {
+function convertTextFrames(textFrames, ab,settings) {  
   var frameData = map(textFrames, function(frame) {
     return {
       paragraphs: importTextFrameParagraphs(frame)
@@ -2446,12 +2447,34 @@ function convertTextFrames(textFrames, ab) {
   var baseStyle = deriveTextStyleCss(frameData);
   var idPrefix = nameSpace + 'ai' + getArtboardId(ab) + '-';
   var abBox = convertAiBounds(ab.artboardRect);
+ 
+  for (var i=0, n=textFrames.length; i<n; i++) {
+    var layerName = getLayerName(textFrames[i].layer);   
+  }
+
+  if (settings.double_text == "true") {
+    warn("double text is turned on")
+  }
+
   var divs = map(frameData, function(obj, i) {
     var frame = textFrames[i];
     var divId = frame.name ? makeKeyword(frame.name) : idPrefix  + (i + 1);
+
     var positionCss = getTextFrameCss(frame, abBox, obj.paragraphs);
-    return '\t\t<div id="' + divId + '" ' + positionCss + '>' +
+
+    // new setting, if you want to create double text, do it here. 
+    if (settings.double_text == "true" && getLayerName(frame.layer) == "upper-text") {
+      var positionCss2 = positionCss.replace("upper","lower")
+      var thisDiv =  '\t\t<div id="' + divId + '" ' + positionCss + '>' +
+        generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r'+ 
+        '\t\t<div id="' + divId + '" ' + positionCss2 + '>' +
+        generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r';  
+    } else {
+      var thisDiv =  '\t\t<div id="' + divId + '" ' + positionCss + '>' +
         generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r';
+    }
+
+    return thisDiv;
   });
 
   var allStyles = pgStyles.concat(charStyles);
@@ -2778,6 +2801,7 @@ function getTextFramesByArtboard(ab, masks, settings) {
     excludedFrames = filter(candidateFrames, textIsRotated);
     candidateFrames = arraySubtract(candidateFrames, excludedFrames);
   }
+
   return candidateFrames;
 }
 
