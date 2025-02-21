@@ -44,7 +44,7 @@ function main() {
 // - Update the version number in package.json
 // - Add an entry to CHANGELOG.md
 // - Run 'npm publish' to create a new GitHub release
-var scriptVersion = '0.120.0';
+var scriptVersion = '0.121.1';
 
 // ================================================
 // ai2html and config settings
@@ -60,6 +60,7 @@ var defaultSettings = {
   "image_format": ["auto"],  // Options: auto, png, png24, jpg, svg
   "write_image_files": true,
   "responsiveness": "fixed", // Options: fixed, dynamic
+  "text_responsiveness": "dynamic", // Options: fixed, dynamic
   "max_width": "",
   "output": "one-file",      // Options: one-file, multiple-files
   "project_name": "",        // Defaults to the name of the AI file
@@ -2606,11 +2607,10 @@ function deriveTextStyleCss(frameData) {
     'padding-top': 0,
     'mix-blend-mode': 'normal',
     'font-style': 'normal',
+    'font-weight': 'regular',
     'height': 'auto',
+    'opacity': 1,
     'position': 'static' // 'relative' also used (to correct baseline misalignment)
-  };
-  var defaultAiStyle = {
-    opacity: 100 // given as AI style because opacity is converted to several CSS properties
   };
   var currCharStyles;
 
@@ -2624,7 +2624,7 @@ function deriveTextStyleCss(frameData) {
     extend(baseStyle, pgStyles[0].cssStyle);
   }
   // override certain base style properties with default values
-  extend(baseStyle, defaultCssStyle, convertAiTextStyle(defaultAiStyle));
+  extend(baseStyle, defaultCssStyle);
   return baseStyle;
 
   function compareCharCount(a, b) {
@@ -4447,7 +4447,7 @@ function getResizerScript(containerId) {
             waiting = false;
             update();
           } else {
-            observer = new IntersectionObserver(onIntersectionChange, {});
+            observer = new IntersectionObserver(onIntersectionChange, {rootMargin: "800px"});
             observer.observe(container);
           }
         }
