@@ -98,6 +98,7 @@ var defaultSettings = {
   "notes": "",
   "sources": "",
   "credit": "",
+  "double_text": false,
 
   // List of settings to include in the "ai2html-settings" text block
   "settings_block": [
@@ -2505,12 +2506,30 @@ function convertTextFrames(textFrames, ab, settings) {
   var baseStyle = deriveTextStyleCss(frameData);
   var idPrefix = nameSpace + 'ai' + getArtboardId(ab) + '-';
   var abBox = convertAiBounds(ab.artboardRect);
+
+  if (settings.double_text == "true") {
+    warn("double text is turned on")
+  }
+
   var divs = map(frameData, function(obj, i) {
     var frame = textFrames[i];
     var divId = frame.name ? makeKeyword(frame.name) : idPrefix  + (i + 1);
     var positionCss = getTextFrameCss(frame, abBox, obj.paragraphs, settings);
-    return '\t\t<div id="' + divId + '" ' + positionCss + '>' +
+
+    
+    // new setting, if you want to create double text, do it here. 
+    if (settings.double_text == "true" && getLayerName(frame.layer) == "upper-text") {
+      var positionCss2 = positionCss.replace("upper","lower")
+      var thisDiv =  '\t\t<div id="' + divId + '" ' + positionCss + '>' +
+        generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r'+ 
+        '\t\t<div id="' + divId + '" ' + positionCss2 + '>' +
+        generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r';  
+    } else {
+      var thisDiv = '\t\t<div id="' + divId + '" ' + positionCss + '>' +
         generateTextFrameHtml(obj.paragraphs, baseStyle, pgStyles, charStyles) + '\r\t\t</div>\r';
+    }    
+
+    return thisDiv;        
   });
 
   var allStyles = pgStyles.concat(charStyles);
