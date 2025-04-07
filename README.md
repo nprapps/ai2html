@@ -50,7 +50,7 @@ Based on how NPR uses ai2html inside our systems, we made a few small tweaks to 
 
 #### Fixes to `project_name` field
 
-The changes here are cataloged in a pull request made to the NYT repo. I believe this fixes a bug that was introduced at some point in the last few versions, but it is possible that it is intentional
+The changes here are cataloged in a [pull request](https://github.com/newsdev/ai2html/pull/176) made to the NYT repo. I believe this fixes a bug that was introduced at some point in the last few versions, but it is possible that it is intentional.
 
 #### Fixes (?) to `image_output_source` field
 
